@@ -101,19 +101,18 @@ runPopup = (activeTab, settings) ->
 
         console.timeEnd 'page_images'
 
-    commandPageSelectionListener = (result) ->
-        extendingObject =
-            id: activeTab.url
-            target:
-                source: activeTab.url
-                selector:
-                        type: 'XPathSelector'
-                        value: result.data.xpath
-                        refinedBy:
-                            type: 'TextQuoteSelector'
-                            exact: result.data.selection
-                            prefix: 'FINDME'
-                            suffix: 'FINDME'
+    commandPageSelectionListener = (mode, result) ->
+        extendingObject = { 'id': activeTab.url }
+        extendingObject[mode] = 
+            source: activeTab.url
+            selector:
+                    type: 'XPathSelector'
+                    value: result.data.xpath
+                    refinedBy:
+                        type: 'TextQuoteSelector'
+                        exact: result.data.selection
+                        prefix: 'FINDME'
+                        suffix: 'FINDME'
         updateJson extendingObject
 
         console.timeEnd 'selection'
@@ -121,9 +120,9 @@ runPopup = (activeTab, settings) ->
     $ ->
         document.title = chrome.i18n.getMessage 'popup_html_title'
 
-        mode = 'body'
+        mode = 'target'
         if (localStorage.getItem 'stored-annotation')?
-            mode = 'target'
+            mode = 'body'
             ANNOTATION_TEMPLATE = JSON.parse localStorage.getItem 'stored-annotation'
         $('#generated-json').val JSON.stringify ANNOTATION_TEMPLATE, null, ' '
 
@@ -157,18 +156,22 @@ runPopup = (activeTab, settings) ->
             type = $(@).text()
             ANNOTATION_TYPE = type
             ANNOTATION_TEMPLATE[mode] = {}
-            debugger;
-            updateJson { mode: { 'type': type } }
+            dummy = {}
+            dummy[mode] = { 'type': type }
+            updateJson dummy
 
         $('#anno-content').on 'keyup', (event) ->
             val = $(@).val()
+            ANNOTATION_TEMPLATE[mode] = {}
+            dummy = {}
             switch ANNOTATION_TYPE
                 when 'Page'
-                    updateJson { mode: val }
+                    dummy[mode] = val
                 when 'Text'
-                    updateJson { mode: {'type': 'TextualBody', 'text': val, 'format': 'text/plain', 'language': 'en'} }
+                    dummy[mode] = {'type': 'TextualBody', 'text': val, 'format': 'text/plain', 'language': 'en'}
                 else
-                    updateJson { mode: {'type': ANNOTATION_TYPE, 'id': val} }
+                    dummy[mode] = {'type': ANNOTATION_TYPE, 'id': val}
+            updateJson dummy
 
         $('.save-button').on 'click', (event) ->
             db.post ANNOTATION_TEMPLATE, (err, response) ->
@@ -208,8 +211,8 @@ runPopup = (activeTab, settings) ->
                     console.time script
                     Messager.read ['command', 'data'], (result) ->
                         switch result.command
-                            when 'selection' then commandPageSelectionListener result
-                            when 'page_images' then commandPageImagesListener result
+                            when 'selection' then commandPageSelectionListener mode, result
+                            when 'page_images' then commandPageImagesListener mode, result
 
                         Messager.clear()
                         executeScript()

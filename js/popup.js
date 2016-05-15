@@ -155,21 +155,21 @@ runPopup = function(activeTab, settings) {
     }
     return console.timeEnd('page_images');
   };
-  commandPageSelectionListener = function(result) {
+  commandPageSelectionListener = function(mode, result) {
     var extendingObject;
     extendingObject = {
-      id: activeTab.url,
-      target: {
-        source: activeTab.url,
-        selector: {
-          type: 'XPathSelector',
-          value: result.data.xpath,
-          refinedBy: {
-            type: 'TextQuoteSelector',
-            exact: result.data.selection,
-            prefix: 'FINDME',
-            suffix: 'FINDME'
-          }
+      'id': activeTab.url
+    };
+    extendingObject[mode] = {
+      source: activeTab.url,
+      selector: {
+        type: 'XPathSelector',
+        value: result.data.xpath,
+        refinedBy: {
+          type: 'TextQuoteSelector',
+          exact: result.data.selection,
+          prefix: 'FINDME',
+          suffix: 'FINDME'
         }
       }
     };
@@ -179,9 +179,9 @@ runPopup = function(activeTab, settings) {
   return $(function() {
     var db, executeScript, mode, toBeExecutedScripts;
     document.title = chrome.i18n.getMessage('popup_html_title');
-    mode = 'body';
+    mode = 'target';
     if ((localStorage.getItem('stored-annotation')) != null) {
-      mode = 'target';
+      mode = 'body';
       ANNOTATION_TEMPLATE = JSON.parse(localStorage.getItem('stored-annotation'));
     }
     $('#generated-json').val(JSON.stringify(ANNOTATION_TEMPLATE, null, ' '));
@@ -218,44 +218,42 @@ runPopup = function(activeTab, settings) {
       });
     });
     $('.anno-type').on('click', function(event) {
-      var type;
+      var dummy, type;
       $('.anno-type').removeClass('button-primary');
       $(this).addClass('button-primary');
       type = $(this).text();
       ANNOTATION_TYPE = type;
       ANNOTATION_TEMPLATE[mode] = {};
-      debugger;
-      return updateJson({
-        mode: {
-          'type': type
-        }
-      });
+      dummy = {};
+      dummy[mode] = {
+        'type': type
+      };
+      return updateJson(dummy);
     });
     $('#anno-content').on('keyup', function(event) {
-      var val;
+      var dummy, val;
       val = $(this).val();
+      ANNOTATION_TEMPLATE[mode] = {};
+      dummy = {};
       switch (ANNOTATION_TYPE) {
         case 'Page':
-          return updateJson({
-            mode: val
-          });
+          dummy[mode] = val;
+          break;
         case 'Text':
-          return updateJson({
-            mode: {
-              'type': 'TextualBody',
-              'text': val,
-              'format': 'text/plain',
-              'language': 'en'
-            }
-          });
+          dummy[mode] = {
+            'type': 'TextualBody',
+            'text': val,
+            'format': 'text/plain',
+            'language': 'en'
+          };
+          break;
         default:
-          return updateJson({
-            mode: {
-              'type': ANNOTATION_TYPE,
-              'id': val
-            }
-          });
+          dummy[mode] = {
+            'type': ANNOTATION_TYPE,
+            'id': val
+          };
       }
+      return updateJson(dummy);
     });
     $('.save-button').on('click', function(event) {
       return db.post(ANNOTATION_TEMPLATE, function(err, response) {
@@ -297,10 +295,10 @@ runPopup = function(activeTab, settings) {
         return Messager.read(['command', 'data'], function(result) {
           switch (result.command) {
             case 'selection':
-              commandPageSelectionListener(result);
+              commandPageSelectionListener(mode, result);
               break;
             case 'page_images':
-              commandPageImagesListener(result);
+              commandPageImagesListener(mode, result);
           }
           Messager.clear();
           return executeScript();
