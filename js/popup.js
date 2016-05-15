@@ -157,6 +157,7 @@ runPopup = function(activeTab, settings) {
   };
   commandPageSelectionListener = function(mode, result) {
     var extendingObject;
+    console.log(result);
     extendingObject = {
       'id': activeTab.url
     };
@@ -166,10 +167,10 @@ runPopup = function(activeTab, settings) {
         type: 'XPathSelector',
         value: result.data.xpath,
         refinedBy: {
-          type: 'TextQuoteSelector',
-          exact: result.data.selection,
-          prefix: 'FINDME',
-          suffix: 'FINDME'
+          type: 'TextPositionSelector',
+          exact: result.data.selectedText,
+          start: result.data.anchorOffset,
+          end: result.data.focusOffset
         }
       }
     };

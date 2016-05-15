@@ -109,10 +109,10 @@ runPopup = (activeTab, settings) ->
                     type: 'XPathSelector'
                     value: result.data.xpath
                     refinedBy:
-                        type: 'TextQuoteSelector'
-                        exact: result.data.selection
-                        prefix: 'FINDME'
-                        suffix: 'FINDME'
+                        type: 'TextPositionSelector'
+                        exact: result.data.selectedText
+                        start: result.data.anchorOffset
+                        end: result.data.focusOffset
         updateJson extendingObject
 
         console.timeEnd 'selection'
