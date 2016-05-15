@@ -13,13 +13,6 @@ imageContext = chrome.contextMenus.create
     onclick: (info, tab) ->
         console.log info, tab
         Messager.send command: 'selected_image', data: { type: 'image', info: info, tab: tab }, ->
-            notification = new Notification
-                title: 'context_menu_image_text_title',
-                msg: 'context_menu_image_text_msg',
-                icon: 'img/a128.png'
-            notification.clearAfter 2
-            notification.show()
-
             chrome.browserAction.setBadgeText text: ''
             timer = new CensorBadge 5 * 1000, 600
             timer.start()

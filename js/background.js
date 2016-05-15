@@ -26,14 +26,7 @@ imageContext = chrome.contextMenus.create({
         tab: tab
       }
     }, function() {
-      var notification, timer;
-      notification = new Notification({
-        title: 'context_menu_image_text_title',
-        msg: 'context_menu_image_text_msg',
-        icon: 'img/a128.png'
-      });
-      notification.clearAfter(2);
-      notification.show();
+      var timer;
       chrome.browserAction.setBadgeText({
         text: ''
       });
