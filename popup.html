@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Annotator</title>
+
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/skeleton.css">
+    <link rel="stylesheet" href="css/popup.css">
+</head>
+<body>
+    <div id="container" class="container" style="width: 500px; margin: 10px;">
+        <div id="alerts" class="alert"><!-- Alerts from Backend --></div>
+
+        <h4 id="header">The Annotator<span class="heading-font-size"> by Crazy Annotators</span></h4>
+
+        <div id="create-annotation">
+            <div class="row">
+                <em>You are about to annotate the selected {text, image, video, section} on the page!</em>
+            </div>
+
+            <div class="row section">
+                <label for="anno-motivation">Motivation</label>
+                <select class="u-full-width" id="anno-motivation" multiple="multiple">
+                    <option value="bookmarking">Bookmarking</option>
+                    <option value="classifying">Classifying</option>
+                    <option value="commenting">Commenting</option>
+                    <option value="describing">Describing</option>
+                    <option value="editing">Editing</option>
+                    <option value="highlighting">Highlighting</option>
+                    <option value="identifying">Identifying</option>
+                    <option value="linking">Linking</option>
+                    <option value="moderating">Moderating</option>
+                    <option value="questioning">Questioning</option>
+                    <option value="replying">Replying</option>
+                    <option value="reviewing">Reviewing</option>
+                    <option value="tagging">Tagging</option>
+                </select>
+            </div>
+
+            <div class="row section">
+                <label for="anno-motivation">Type</label>
+                <a class="button anno-type">Page</a>
+                <a class="button anno-type">Text</a>
+                <a class="button anno-type">Image</a>
+                <a class="button anno-type">Video</a>
+                <a class="button anno-type">Sound</a>
+
+                <label for="anno-content">Content</label>
+                <textarea class="u-full-width" id="anno-content"></textarea>
+            </div>
+
+            <div class="row section nerd-mode">
+                <em>It's nice to see a nerd in here! You can see/change the generated annotation.</em>
+                <label for="generated-json">Generated JSON</label>
+                <textarea class="u-full-width" id="generated-json"></textarea>
+            </div>
+
+            <a class="button button-primary save-button">Save</a>
+            <a class="button button-primary store-button">Store</a>
+            <a class="button button-primary reset-button">Reset</a>
+            <a class="button nerd-mode-button">Nerd Mode</a>
+        </div>
+    </div>
+
+   
+    <script src="js/dependencies/jquery.min.js"></script>
+    <script src="js/dependencies/pouchdb.min.js"></script>
+    <script src="js/popup.js"></script>
+    <script src="js/storage.js"></script>
+
+</body>
+</html>

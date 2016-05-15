@@ -1,0 +1,58 @@
+{
+    "name": "Annotator",
+    "description": "This extension lets you to create annotations very quick way.",
+    "author": "Crazy Annotators",
+    "version": "0.1",
+    "manifest_version": 2,
+
+    "icons": {
+        "16": "img/a16.png",
+        "48": "img/a48.png",
+        "128": "img/a128.png"
+    },
+
+    "options_ui": {
+        "page": "options.html",
+        "chrome_style": true
+    },
+
+    "browser_action": {
+        "default_icon": {
+            "19": "img/a19.png",
+            "38": "img/a38.png"
+        },
+        "default_title": "Create Annotation",
+        "default_popup": "popup.html"
+    },
+
+    "background": {
+        "scripts": [
+            "js/notification.js",
+            "js/censorbadge.js",
+            "js/storage.js",
+            "js/background.js"
+        ]
+    },
+
+    "content_scripts": [
+        {
+            "js": [
+                "js/storage.js",
+                "js/content.js"
+            ],
+            "matches": [
+                "*://*/*"
+            ]
+        }
+   ],
+
+    "permissions": [
+        "notifications",
+        "storage",
+        "activeTab",
+        "background",
+        "contextMenus",
+        "*://*/*"
+    ],
+    "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'"
+}

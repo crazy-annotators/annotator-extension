@@ -1,0 +1,12 @@
+{exec} = require 'child_process'
+
+task 'watch', 'Compiles and watching for any changes all .coffee files', ->
+    exec 'coffee -b -o ../ -cw *.coffee', (err, stdout, stderr) ->
+    throw err if err
+    console.log stdout + stderr
+
+task 'minify', 'Minify all js files after build', ->
+    # TODO: Store all js files in an array, loop them with this-like usage:
+    exec 'java -jar "../../../compiler.jar" --js  --js_output_file lib/app.production.js', (err, stdout, stderr) ->
+        throw err if err
+        console.log stdout + stderr

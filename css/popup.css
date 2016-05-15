@@ -1,0 +1,23 @@
+.header {
+    margin-top: 15px;
+}
+
+.heading-font-size {
+  font-size: 1.2rem;
+  color: #999;
+  letter-spacing: normal;
+}
+
+.row.section {
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+.row.section.nerd-mode {
+    display: none;
+}
+
+textarea, select {
+    height: 100px;
+}
