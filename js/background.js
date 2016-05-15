@@ -13,12 +13,8 @@ chrome.browserAction.setBadgeText({
   text: ''
 });
 
-Messager.addListener(function(r) {
-  return console.log(r);
-});
-
 imageContext = chrome.contextMenus.create({
-  title: 'Create anonotation for this image',
+  title: 'Create anonotation with this image',
   contexts: ['image'],
   onclick: function(info, tab) {
     console.log(info, tab);

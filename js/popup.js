@@ -101,7 +101,7 @@ chrome.tabs.query({
 });
 
 runPopup = function(activeTab, settings) {
-  var commandPageImagesListener, commandPageSelectionListener, showAlert, updateJson;
+  var commandPageImagesListener, commandPageSelectionListener, commandSelectedImageListener, showAlert, updateJson;
   showAlert = function(msg, type) {
     var $alertContainer;
     if (msg == null) {
@@ -157,9 +157,7 @@ runPopup = function(activeTab, settings) {
   };
   commandPageSelectionListener = function(mode, result) {
     var extendingObject;
-    extendingObject = {
-      'id': activeTab.url
-    };
+    extendingObject = {};
     extendingObject[mode] = {
       source: activeTab.url,
       selector: {
@@ -172,6 +170,16 @@ runPopup = function(activeTab, settings) {
           end: result.data.end
         }
       }
+    };
+    updateJson(extendingObject);
+    return console.timeEnd('selection');
+  };
+  commandSelectedImageListener = function(mode, srcUrl) {
+    var extendingObject;
+    extendingObject = {};
+    extendingObject[mode] = {
+      id: srcUrl,
+      type: 'Image'
     };
     updateJson(extendingObject);
     return console.timeEnd('selection');
@@ -258,12 +266,16 @@ runPopup = function(activeTab, settings) {
         var status;
         status = document.getElementById('doc-id');
         status.textContent = response.id;
-        $('.info-bar').show();
+        $('#info-bar').show();
         localStorage.removeItem('stored-annotation-id');
         return localStorage.removeItem('stored-annotation');
       });
     });
     $('.store-button').on('click', function(event) {
+      var status;
+      status = document.getElementById('info-bar');
+      status.textContent = 'Now you can go to another page to complete annotation.';
+      $('#info-bar').show();
       localStorage.setItem('stored-annotation-id', activeTab.id);
       return localStorage.setItem('stored-annotation', JSON.stringify(ANNOTATION_TEMPLATE));
     });
@@ -281,10 +293,15 @@ runPopup = function(activeTab, settings) {
       return $(this).attr("clicked", "true");
     });
     Messager.read(['command', 'data'], function(result) {
-      var parseUrl;
+      var mode, stored_annotation_tab;
       if (result.command === 'selected_image' && (result.data.info.srcUrl != null)) {
-        parseUrl = document.createElement('a');
-        return parseUrl.href = result.data.tab.url;
+        stored_annotation_tab = localStorage.getItem('stored-annotation-id');
+        if ((stored_annotation_tab != null) && stored_annotation_tab !== activeTab.id) {
+          mode = 'body';
+        } else {
+          mode = 'target';
+        }
+        return commandSelectedImageListener(mode, result.data.info.srcUrl);
       }
     });
     toBeExecutedScripts = ['selection', 'page_images'];

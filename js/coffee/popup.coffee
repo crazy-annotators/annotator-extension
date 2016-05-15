@@ -102,17 +102,26 @@ runPopup = (activeTab, settings) ->
         console.timeEnd 'page_images'
 
     commandPageSelectionListener = (mode, result) ->
-        extendingObject = { 'id': activeTab.url }
+        extendingObject = { }
         extendingObject[mode] = 
             source: activeTab.url
             selector:
-                    type: 'XPathSelector'
-                    value: result.data.xpath
-                    refinedBy:
-                        type: 'TextPositionSelector'
-                        exact: result.data.selectedText
-                        start: result.data.start
-                        end: result.data.end
+                type: 'XPathSelector'
+                value: result.data.xpath
+                refinedBy:
+                    type: 'TextPositionSelector'
+                    exact: result.data.selectedText
+                    start: result.data.start
+                    end: result.data.end
+        updateJson extendingObject
+
+        console.timeEnd 'selection'
+
+    commandSelectedImageListener = (mode, srcUrl) ->
+        extendingObject = { }
+        extendingObject[mode] = 
+            id: srcUrl
+            type: 'Image'
         updateJson extendingObject
 
         console.timeEnd 'selection'
@@ -175,12 +184,16 @@ runPopup = (activeTab, settings) ->
             db.post ANNOTATION_TEMPLATE, (err, response) ->
                 status = document.getElementById 'doc-id'
                 status.textContent = response.id
-                $('.info-bar').show()
+                $('#info-bar').show()
 
                 localStorage.removeItem 'stored-annotation-id'
                 localStorage.removeItem 'stored-annotation'
 
         $('.store-button').on 'click', (event) ->
+            status = document.getElementById 'info-bar'
+            status.textContent = 'Now you can go to another page to complete annotation.'
+            $('#info-bar').show()
+
             localStorage.setItem 'stored-annotation-id', activeTab.id
             localStorage.setItem 'stored-annotation', JSON.stringify ANNOTATION_TEMPLATE
 
@@ -202,8 +215,12 @@ runPopup = (activeTab, settings) ->
         Messager.read ['command', 'data'], (result) ->
             # When user select a image...
             if result.command is 'selected_image' and result.data.info.srcUrl?
-                parseUrl = document.createElement 'a'
-                parseUrl.href = result.data.tab.url
+                stored_annotation_tab = localStorage.getItem 'stored-annotation-id'
+                if stored_annotation_tab? and stored_annotation_tab != activeTab.id
+                    mode = 'body'
+                else
+                    mode = 'target'
+                commandSelectedImageListener mode, result.data.info.srcUrl
 
 
         # We will get images on the page and get selection if exists
