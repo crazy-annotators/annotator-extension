@@ -111,8 +111,8 @@ runPopup = (activeTab, settings) ->
                     refinedBy:
                         type: 'TextPositionSelector'
                         exact: result.data.selectedText
-                        start: result.data.anchorOffset
-                        end: result.data.focusOffset
+                        start: result.data.start
+                        end: result.data.end
         updateJson extendingObject
 
         console.timeEnd 'selection'
@@ -120,9 +120,7 @@ runPopup = (activeTab, settings) ->
     $ ->
         document.title = chrome.i18n.getMessage 'popup_html_title'
 
-        mode = 'target'
-        if (localStorage.getItem 'stored-annotation')?
-            mode = 'body'
+        if (localStorage.getItem 'stored-annotation-id')?
             ANNOTATION_TEMPLATE = JSON.parse localStorage.getItem 'stored-annotation'
         $('#generated-json').val JSON.stringify ANNOTATION_TEMPLATE, null, ' '
 
@@ -155,32 +153,39 @@ runPopup = (activeTab, settings) ->
             $(@).addClass 'button-primary'
             type = $(@).text()
             ANNOTATION_TYPE = type
-            ANNOTATION_TEMPLATE[mode] = {}
+            ANNOTATION_TEMPLATE['body'] = {}
             dummy = {}
-            dummy[mode] = { 'type': type }
+            dummy['body'] = { 'type': type }
             updateJson dummy
 
         $('#anno-content').on 'keyup', (event) ->
             val = $(@).val()
-            ANNOTATION_TEMPLATE[mode] = {}
+            ANNOTATION_TEMPLATE['body'] = {}
             dummy = {}
             switch ANNOTATION_TYPE
                 when 'Page'
-                    dummy[mode] = val
+                    dummy['body'] = val
                 when 'Text'
-                    dummy[mode] = {'type': 'TextualBody', 'text': val, 'format': 'text/plain', 'language': 'en'}
+                    dummy['body'] = {'type': 'TextualBody', 'text': val, 'format': 'text/plain', 'language': 'en'}
                 else
-                    dummy[mode] = {'type': ANNOTATION_TYPE, 'id': val}
+                    dummy['body'] = {'type': ANNOTATION_TYPE, 'id': val}
             updateJson dummy
 
         $('.save-button').on 'click', (event) ->
             db.post ANNOTATION_TEMPLATE, (err, response) ->
+                status = document.getElementById 'doc-id'
+                status.textContent = response.id
+                $('.info-bar').show()
+
+                localStorage.removeItem 'stored-annotation-id'
                 localStorage.removeItem 'stored-annotation'
 
         $('.store-button').on 'click', (event) ->
+            localStorage.setItem 'stored-annotation-id', activeTab.id
             localStorage.setItem 'stored-annotation', JSON.stringify ANNOTATION_TEMPLATE
 
         $('.reset-button').on 'click', (event) ->
+            localStorage.removeItem 'stored-annotation-id'
             localStorage.removeItem 'stored-annotation'
             location.reload()
 
@@ -210,6 +215,12 @@ runPopup = (activeTab, settings) ->
                 ->
                     console.time script
                     Messager.read ['command', 'data'], (result) ->
+                        stored_annotation_tab = localStorage.getItem 'stored-annotation-id'
+                        if stored_annotation_tab? and stored_annotation_tab != activeTab.id
+                            mode = 'body'
+                        else
+                            mode = 'target'
+
                         switch result.command
                             when 'selection' then commandPageSelectionListener mode, result
                             when 'page_images' then commandPageImagesListener mode, result

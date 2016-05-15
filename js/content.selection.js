@@ -17,7 +17,8 @@ if (window.getSelection().toString() !== '') {
   Messager.send({
     command: 'selection',
     data: {
-      selection: window.getSelection(),
+      start: window.getSelection().anchorOffset,
+      end: window.getSelection().focusOffset,
       selectedString: window.getSelection().toString(),
       xpath: getPathTo(window.getSelection().getRangeAt(0).commonAncestorContainer, {
         pageTitle: document.title,

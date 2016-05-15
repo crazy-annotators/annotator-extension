@@ -157,7 +157,6 @@ runPopup = function(activeTab, settings) {
   };
   commandPageSelectionListener = function(mode, result) {
     var extendingObject;
-    console.log(result);
     extendingObject = {
       'id': activeTab.url
     };
@@ -169,8 +168,8 @@ runPopup = function(activeTab, settings) {
         refinedBy: {
           type: 'TextPositionSelector',
           exact: result.data.selectedText,
-          start: result.data.anchorOffset,
-          end: result.data.focusOffset
+          start: result.data.start,
+          end: result.data.end
         }
       }
     };
@@ -178,11 +177,9 @@ runPopup = function(activeTab, settings) {
     return console.timeEnd('selection');
   };
   return $(function() {
-    var db, executeScript, mode, toBeExecutedScripts;
+    var db, executeScript, toBeExecutedScripts;
     document.title = chrome.i18n.getMessage('popup_html_title');
-    mode = 'target';
-    if ((localStorage.getItem('stored-annotation')) != null) {
-      mode = 'body';
+    if ((localStorage.getItem('stored-annotation-id')) != null) {
       ANNOTATION_TEMPLATE = JSON.parse(localStorage.getItem('stored-annotation'));
     }
     $('#generated-json').val(JSON.stringify(ANNOTATION_TEMPLATE, null, ' '));
@@ -224,9 +221,9 @@ runPopup = function(activeTab, settings) {
       $(this).addClass('button-primary');
       type = $(this).text();
       ANNOTATION_TYPE = type;
-      ANNOTATION_TEMPLATE[mode] = {};
+      ANNOTATION_TEMPLATE['body'] = {};
       dummy = {};
-      dummy[mode] = {
+      dummy['body'] = {
         'type': type
       };
       return updateJson(dummy);
@@ -234,14 +231,14 @@ runPopup = function(activeTab, settings) {
     $('#anno-content').on('keyup', function(event) {
       var dummy, val;
       val = $(this).val();
-      ANNOTATION_TEMPLATE[mode] = {};
+      ANNOTATION_TEMPLATE['body'] = {};
       dummy = {};
       switch (ANNOTATION_TYPE) {
         case 'Page':
-          dummy[mode] = val;
+          dummy['body'] = val;
           break;
         case 'Text':
-          dummy[mode] = {
+          dummy['body'] = {
             'type': 'TextualBody',
             'text': val,
             'format': 'text/plain',
@@ -249,7 +246,7 @@ runPopup = function(activeTab, settings) {
           };
           break;
         default:
-          dummy[mode] = {
+          dummy['body'] = {
             'type': ANNOTATION_TYPE,
             'id': val
           };
@@ -258,13 +255,20 @@ runPopup = function(activeTab, settings) {
     });
     $('.save-button').on('click', function(event) {
       return db.post(ANNOTATION_TEMPLATE, function(err, response) {
+        var status;
+        status = document.getElementById('doc-id');
+        status.textContent = response.id;
+        $('.info-bar').show();
+        localStorage.removeItem('stored-annotation-id');
         return localStorage.removeItem('stored-annotation');
       });
     });
     $('.store-button').on('click', function(event) {
+      localStorage.setItem('stored-annotation-id', activeTab.id);
       return localStorage.setItem('stored-annotation', JSON.stringify(ANNOTATION_TEMPLATE));
     });
     $('.reset-button').on('click', function(event) {
+      localStorage.removeItem('stored-annotation-id');
       localStorage.removeItem('stored-annotation');
       return location.reload();
     });
@@ -294,6 +298,13 @@ runPopup = function(activeTab, settings) {
       }, function() {
         console.time(script);
         return Messager.read(['command', 'data'], function(result) {
+          var mode, stored_annotation_tab;
+          stored_annotation_tab = localStorage.getItem('stored-annotation-id');
+          if ((stored_annotation_tab != null) && stored_annotation_tab !== activeTab.id) {
+            mode = 'body';
+          } else {
+            mode = 'target';
+          }
           switch (result.command) {
             case 'selection':
               commandPageSelectionListener(mode, result);

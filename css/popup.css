@@ -18,6 +18,11 @@
     display: none;
 }
 
+.row.section.info-bar {
+    display: none;
+    background-color: #FBFFD5;
+}
+
 textarea, select {
     height: 100px;
 }
