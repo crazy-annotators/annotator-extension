@@ -6,4 +6,6 @@ We are a loosly couple group of people who are very interested in supporting web
 
 Presently we are focused on getting a trivial web extension up. Actucally we extensions. One for generating and one for consuming web annotations.
 
-The super simple extension focuses on creating text and image annotations. Hoping to have a demo by [iAnnotate Hack Day](http://iannotate.org) on 21 5 2016
+The super simple extension focuses on creating text and image annotations. Hoping to have a demo by [iAnnotate Hack Day](http://iannotate.org) that will take place on  21 5 2016 in Berlin.
+
+For more information [see](https://github.com/crazy-annotators/annotator-extension/wiki#crazy-annotators)
